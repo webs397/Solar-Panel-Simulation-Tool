@@ -16,7 +16,6 @@ def get_daily_data(lat, lon, month, angle, azimuth, b_global, b_clearsky, b_temp
 
 def set_parameters(lat, lon, month, angle, azimuth, b_global, b_clearsky, b_temp, b_localtime):
     parameters = {
-
         "lat": lat,
         "lon": lon,
         "month": month,
@@ -34,6 +33,3 @@ def set_parameters(lat, lon, month, angle, azimuth, b_global, b_clearsky, b_temp
 
 get_daily_data(50.77534, 6.0838868, 1, 0, 0, 1, 0, 0, 0)
 
-"""+ lat + "&lon=" + lon + "&month=" + month
-                            + "&angle=" + angle + "&aspect=" + azimuth + "&global=" + b_global + "&clearsky=" + b_clearsky
-                            + "&showtemperatures=" + b_temp + "&localtime=" + b_localtime + "&outputformat=json")"""
