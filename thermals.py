@@ -9,7 +9,7 @@ def incoming_heat_flow(a_s, plate_area, irradiation_global):
 
 
 def heat_exchange_coefficient(Nusselt-Number (ges. bereich), lamda, lenght):
-    """Calculates the heat exchange coefficient (Wärmeübergangskoeffizient)"""
+    """Calculates the heat exchange coefficient (Wärmeübergangskoeffizient), WUE P.232"""
     hec = (Nusselt-Number (ges. bereich) * lamda)/ lenght 
 
     return
