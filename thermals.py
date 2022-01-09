@@ -8,9 +8,9 @@ def incoming_heat_flow(a_s, plate_area, irradiation_global):
     return ihf
 
 
-def heat_exchange_coefficient():
+def heat_exchange_coefficient(Nusselt-Number,lamda,lenght):
     """Calculates the heat exchange coefficient (Wärmeübergangskoeffizient)"""
-    # THIS NEEDS DOING
+    hec = (Nu_m * lamda)/ lenght 
 
     return
 
