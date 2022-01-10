@@ -1,8 +1,8 @@
 from scipy.constants import sigma
 from math import cos
-from scipy.constants import lambda
 
 
+lambda = 0,0260
 
 def incoming_heat_flow(a_s, plate_area, irradiation_global):
     """Calculates the incoming heat flow from global irradiation, output is in Watts"""
