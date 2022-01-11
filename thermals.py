@@ -116,6 +116,7 @@ def convective_heat_flow(heat_exchange_coefficient, plate_area, air_temp):
     """Calculates the convective heat flow across the plate"""
     chf = heat_exchange_coefficient * plate_area * air_temp
     return chf
+print(chf)
 
 
 def dew_temperature(rel_humidity, air_temp):
