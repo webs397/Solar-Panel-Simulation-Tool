@@ -75,14 +75,18 @@ def nusselt_number_erzw_corrected(cf, N_erzw):
 
 def Beta_gas(temp_ref, 1)
     Beta_g = 1/temp_ref
+    return Beta_g
 
-def Raylleigh_number()
-    Ra_n = 1000*(9,80665 * Beta_gas * (plate_temp-air_Temp) * pow(L,3) * pow(density_l,2) * cp)/(eta * LAMBDA_l)
+def Raylleigh_number(Beta_gas, plate_temp, air_temp, length, density_l, cp, eta, LAMBDA_l)
+    Ra = 1000*(9,80665 * Beta_gas * (plate_temp-air_Temp) * pow(length,3) * pow(density_l,2) * cp)/(eta * LAMBDA_l)
+    return Ra
 
-
-def nusselt_number_free():
-    N_free = 0,56 pow(Ra_c * cos(gamma), 1/4) + 0,13(pow(Ra, 1/3) - pow(Ra_c, 1/3))
-    return
+def Raylleigh_number_critical(GAMMA)
+    Ra_c = pow(10, 8.9 - 0.00178 * pow(GAMMA, 1.82)) 
+    return Ra_c
+def nusselt_number_free(Ra_c, GAMMA, Ra):
+    N_free = 0,56 pow(Ra_c * cos(GAMMA), 1/4) + 0,13(pow(Ra, 1/3) - pow(Ra_c, 1/3))
+    return N_free
 
 def nusselt_number_mix(Nu_erz, Nu_free, angle):
     # Might need to add if statement for angle
