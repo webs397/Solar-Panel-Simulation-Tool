@@ -3,8 +3,7 @@ from math import cos, sqrt
 from numpy import log
 
 
-LAMBDA_g = 0.0259580
-LAMBDA_l = 0.02639495
+LAMBDA = 0.0259580
 dynamic_viscosity_g = 1.8264e-05
 specific_isobaric_heat_capacity_g = 1.005470208
 density_g = 1.420943445
