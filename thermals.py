@@ -1,5 +1,6 @@
 from scipy.constants import sigma
 from math import cos, sqrt
+from numpy import log
 
 LAMBDA = 0.0260
 
@@ -64,10 +65,21 @@ def heat_exchange_coefficient(N_m, LAMBDA, length):
     return hec
 
 
-def convective_heat_flow(heat_exchange_coefficient, plate_area, temperature_air):
+def convective_heat_flow(heat_exchange_coefficient, plate_area, air_temp):
     """Calculates the convective heat flow across the plate"""
-    chf = heat_exchange_coefficient * plate_area * temperature_air
+    chf = heat_exchange_coefficient * plate_area * air_temp
     return chf
+
+
+def dew_temperature(rel_humidity, air_temp):
+    """Calculates dewpoint temperature as referred to in The Relationship between Relative
+        Humidity and the Dewpoint Temperature in Moist Air A Simple Conversion and Applications
+        BY MARK G. LAWRENCE 2005 """
+    b = 243.04
+    a = 17.625
+    dew_temp = b * (log(rel_humidity / 100) + (a * air_temp / (b + air_temp))) / (
+            a - log(rel_humidity / 100) - ((a * air_temp) / (b + air_temp)))
+    return dew_temp
 
 
 def sky_temperature(air_temp, dew_temp, standard_time):
@@ -90,3 +102,17 @@ def solar_heat_flow(solar_absorbtion_coeff, area,
     """Calculates the heat flow resulting from solar radiation"""
     shf = solar_absorbtion_coeff * area * irradiation_g
     return shf
+
+
+def plateTemp(em_deg, length, width, solar_absorbtion_coeff, air_temp, irradiation_g, plate_temp, rel_humidity):
+    area = length * width
+    hf_sol = solar_heat_flow(solar_absorbtion_coeff, area, irradiation_g)
+    dew_temp = dew_temperature(rel_humidity, air_temp)
+    sky_temp = sky_temperature(air_temp, dew_temp)
+    hf_rad = radiation_heat_flow(em_deg, area, plate_temp, sky_temp)
+    cf = correction_factor(plate_temp, )
+    N_m = nusselt_number_m(cf,N_0)
+    heat_ex_coeff = heat_exchange_coefficient(N_m, LAMBDA, length)
+    hf_conv = convective_heat_flow(heat_ex_coeff, area, air_temp)
+
+

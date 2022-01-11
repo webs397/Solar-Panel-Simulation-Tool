@@ -85,6 +85,8 @@ def monthToInt(month):
         return 12
 
 
+
+
 def openWindow(self, data):
     self.w = outputWindow()
     output_layout = QHBoxLayout()
@@ -96,6 +98,7 @@ def openWindow(self, data):
     temperature_graph.setXRange(0, 23, padding=0)
     temperature_graph.setLimits(xMin=0, xMax=23)
     temperature_graph.plot(hours, data[1], pen=airtemp_pen)
+
     # PLATE TEMPERATURE IN HERE
     #temperature_graph.plot(hours, , pen=temp_pen)
     output_layout.addWidget(temperature_graph)
