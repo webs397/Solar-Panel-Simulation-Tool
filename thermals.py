@@ -2,9 +2,17 @@ from scipy.constants import sigma
 from math import cos, sqrt
 from numpy import log
 
-LAMBDA = 0.0260
+LAMBDA_g = 0,0259580
+LAMBDA_l = 0,02639495
+GAMMA = 90° - β
+("Winkel der Platte zur Horizontalen")
 dynamic_viscosity_g = 1.8264e-05
 specific_isobaric_heat_capacity_g = 1.005470208
+density_g = 1.420943445
+density_l = 1.16110661
+cp = 1.00583148
+eta = 1,855E-05
+
 
 
 def incoming_heat_flow(a_s, plate_area, irradiation_global):
@@ -65,7 +73,15 @@ def nusselt_number_erzw_corrected(cf, N_erzw):
     N_erzw_corrected = cf * N_erzw
     return N_erzw_corrected
 
+def Beta_gas(temp_ref, 1)
+    Beta_g = 1/temp_ref
+
+def Raylleigh_number()
+    Ra_n = 1000*(9,80665 * Beta_gas * (plate_temp-air_Temp) * pow(L,3) * pow(density_l,2) * cp)/(eta * LAMBDA_l)
+
+
 def nusselt_number_free():
+    N_free = 0,56 pow(Ra_c * cos(gamma), 1/4) + 0,13(pow(Ra, 1/3) - pow(Ra_c, 1/3))
     return
 
 def nusselt_number_mix(Nu_erz, Nu_free, angle):
