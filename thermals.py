@@ -3,8 +3,7 @@ from math import cos, sqrt
 from numpy import log
 
 
-LAMBDA_g = 0.0259580
-LAMBDA_l = 0.02639495
+LAMBDA = 0.0259580
 dynamic_viscosity_g = 1.8264e-05
 specific_isobaric_heat_capacity_g = 1.005470208
 density_g = 1.420943445
@@ -78,8 +77,8 @@ def Beta_gas(temp_ref):
     Beta_g = 1/temp_ref
     return Beta_g
 
-def Rayleigh_number(Beta_gas, plate_temp, air_temp, length, density_l, cp, eta, LAMBDA_l):
-    Ra = 1000*(9.80665 * Beta_gas * (plate_temp-air_temp) * pow(length, 3) * pow(density_l, 2) * cp)/(eta * LAMBDA_l)
+def Rayleigh_number(Beta_gas, plate_temp, air_temp, length, density_l, cp, eta, LAMBDA):
+    Ra = 1000*(9.80665 * Beta_gas * (plate_temp-air_temp) * pow(length, 3) * pow(density_l, 2) * cp)/(eta * LAMBDA)
     return Ra
 
 def Rayleigh_number_critical(angle_vert):
