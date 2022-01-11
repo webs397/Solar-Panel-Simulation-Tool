@@ -44,13 +44,18 @@ def heat_exchange_coefficient_turb(nusselt_number_turb, LAMBDA, length):
     return hec_turb
 
 
-def nusselt_number_0(nusselt_number_lam, nusselt_number_turb):
+def nusselt_number_erzw(nusselt_number_lam, nusselt_number_turb):
     N_0 = sqrt(pow(nusselt_number_lam, 2) + pow(nusselt_number_turb, 2))
     return N_0
 
 
-def correction_factor(Temperature_surface, Temperature_reference):
-    cf = pow(Temperature_reference / Temperature_surface, 0.12)
+def reference_temperature(plate_temp, air_temp):
+    ref_temp = (plate_temp + air_temp) / 2
+    return ref_temp
+
+
+def correction_factor(plate_temp, temp_ref):
+    cf = pow(temp_ref / plate_temp, 0.12)
     return cf
 
 
@@ -111,8 +116,6 @@ def plateTemp(em_deg, length, width, solar_absorbtion_coeff, air_temp, irradiati
     sky_temp = sky_temperature(air_temp, dew_temp)
     hf_rad = radiation_heat_flow(em_deg, area, plate_temp, sky_temp)
     cf = correction_factor(plate_temp, )
-    N_m = nusselt_number_m(cf,N_0)
+    N_m = nusselt_number_m(cf, N_0)
     heat_ex_coeff = heat_exchange_coefficient(N_m, LAMBDA, length)
     hf_conv = convective_heat_flow(heat_ex_coeff, area, air_temp)
-
-
