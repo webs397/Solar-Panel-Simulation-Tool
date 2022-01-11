@@ -8,6 +8,7 @@ import folium
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 import pyqtgraph as pg
 from communication import get_daily_data
+from thermals import plateTemp
 
 
 class NumberLineEdit(QLineEdit):
@@ -87,7 +88,7 @@ def monthToInt(month):
 
 
 
-def openWindow(self, data):
+def openWindow(self, data, inputs):
     self.w = outputWindow()
     output_layout = QHBoxLayout()
     temperature_graph = pg.PlotWidget()
@@ -98,6 +99,10 @@ def openWindow(self, data):
     temperature_graph.setXRange(0, 23, padding=0)
     temperature_graph.setLimits(xMin=0, xMax=23)
     temperature_graph.plot(hours, data[1], pen=airtemp_pen)
+
+    plate_temps = []
+    for i in range(0, data[1]):
+        plate_temps = plateTemp(em_deg)
 
     # PLATE TEMPERATURE IN HERE
     #temperature_graph.plot(hours, , pen=temp_pen)
@@ -154,6 +159,9 @@ class Window(QWidget):
         meteo_data_layout.addWidget(QLabel("Wind Direction [°]"))
         line_edit_winddirection = QLineEdit()
         meteo_data_layout.addWidget(line_edit_winddirection)
+        meteo_data_layout.addWidget(QLabel("Relative Humidity [%]"))
+        line_edit_rel_humidity = QLineEdit()
+        meteo_data_layout.addWidget(line_edit_rel_humidity)
         check_g_irrad = QCheckBox("Global Irradiance")
         meteo_data_layout.addWidget(check_g_irrad)
         check_clearsky = QCheckBox("Clear Sky")
@@ -165,6 +173,13 @@ class Window(QWidget):
         # Setup for Plate Data
 
         sp = SolarPanel()
+        # ADD  NUMBERS VALIDATOR
+        plate_data_layout.addWidget(QLabel("Panel Length [m]"))
+        line_edit_length = QLineEdit()
+        plate_data_layout.addWidget(line_edit_length)
+        plate_data_layout.addWidget(QLabel("Panel Width [m]"))
+        line_edit_width = QLineEdit()
+        plate_data_layout.addWidget(line_edit_width)
         plate_data_layout.addWidget(QLabel("Angle [°]"))
         line_edit_angle = NumberLineEdit()
         line_edit_angle.sendNumber.connect(sp.setAlpha)
@@ -174,6 +189,15 @@ class Window(QWidget):
         line_edit_azimuth = NumberLineEdit()
         line_edit_azimuth.sendNumber.connect(sp.setGamma)
         plate_data_layout.addWidget(line_edit_azimuth)
+        plate_data_layout.addWidget(QLabel("Absorption Factor"))
+        line_edit_absorb_factor = QLineEdit()
+        plate_data_layout.addWidget(line_edit_absorb_factor)
+        plate_data_layout.addWidget(QLabel("Emission Factor"))
+        line_edit_length = QLineEdit()
+        plate_data_layout.addWidget(line_edit_length)
+
+
+
         #verticalSpacer = QSpacerItem(10, 10)
         #plate_data_layout.addSpacerItem(verticalSpacer)
 
@@ -195,8 +219,9 @@ class Window(QWidget):
         left_layout.addLayout(lat_lon_layout)
 
         def calculateClicked():
-            inputs = [cb_month.currentText(), line_edit_angle.text(), line_edit_azimuth.text(),
-                      line_edit_windspeed.text(), line_edit_winddirection.text(), ]
+            inputs = [cb_month.currentText(), line_edit_windspeed.text(), line_edit_winddirection.text(),
+                      line_edit_rel_humidity.text(), line_edit_length.text(), line_edit_width.text(),
+                      line_edit_angle.text(), line_edit_azimuth.text()]
             inputs[0] = monthToInt(inputs[0])
             coords = tuple(float(x) for x in coord_line_edit.text().split(','))
             if check_g_irrad.isChecked():
