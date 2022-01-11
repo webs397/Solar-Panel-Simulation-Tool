@@ -2,22 +2,62 @@ from scipy.constants import sigma
 from math import cos
 
 
+lambda = 0,0260
+
 def incoming_heat_flow(a_s, plate_area, irradiation_global):
     """Calculates the incoming heat flow from global irradiation, output is in Watts"""
     ihf = a_s * plate_area * irradiation_global
     return ihf
 
+def Prandtl(dynamic_viscosity_g, specific_isobaric_heat_capacity_g , lambda)
+    Pr = (dynamic_viscosity_g  * specific_isobaric_heat_capacity_g) / lambda
+    return Rr
 
-def heat_exchange_coefficient():
-    """Calculates the heat exchange coefficient (Wärmeübergangskoeffizient)"""
-    # THIS NEEDS DOING
+def Reynold_m(wind_velocity, length, dynamic_viscosity_g, density_g)
+    """ mittlere Reynolds-Zahl - (8.17) S.231 """
+    Re_m = (wind_velocity * length * density_g) / dynamic_viscosity_g
+    return Re_m
 
-    return
+def nusselt_number_lam(Reynold_m, Prandtl)
+    """ mittlere Nu-Zahl - (8.16) S.231 """
+    N_lam = 0,664 * Reynold_m^1/2 * Prandtl^1/3
+    return N_lam
 
+def heat_exchange_coefficient_lam(nusselt_number_lam, lambda, length)
+    hec_lam = (nusselt_number_lam * lambda)/ length 
+    return hec_lam
 
-def convective_heat_flow(heat_exchange_coeff, plate_area, temperature_air):
+def nusselt_number_turb(Reynold_m, Prandtl)
+""" mittlere Nu-Zahl - (8.21) S.232 """
+    N_turb = (0,037 * Reynold_m^0,8 * Prandtl)/(1 + 2,443 * Reynold_m^-0,1 * (Prandtl^(2/3)-1))
+    return N_turb
+
+def heat_exchange_coefficient_turb(nusselt_number_turb, lambda, length)
+    hec_turb = (nusselt_number_turb * lambda)/ length 
+    return hec_turb
+
+def nusselt_number_0(nusselt_number_lam,nusselt_number_turb)
+    N_0 = sqrt((nusselt_number_lam)^2+(nusselt_number_turb)^2)
+    return N_0
+
+def correction_factor(Temperature_surface, Temperature_reference)
+    cf = (Temperature_reference/Temperature_surface)^0,12
+    return cf
+
+def nusselt_number_m(correctionfactor, nusselt_number_0)
+    N_m = correctionfactor * nusselt_number_o
+    return N_m
+    
+
+def heat_exchange_coefficient(nusselt_number_m, lambda, length):
+    """Calculates the heat exchange coefficient (Wärmeübergangskoeffizient), WUE P.232"""
+    hec = (nusselt_number_m * lambda)/ length 
+    return hec
+
+                     
+def convective_heat_flow(heat_exchange_coefficient, plate_area, temperature_air):
     """Calculates the convective heat flow across the plate"""
-    chf = heat_exchange_coeff * plate_area * temperature_air
+    chf = heat_exchange_coefficient* plate_area * temperature_air
     return chf
 
 
