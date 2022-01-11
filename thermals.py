@@ -1,6 +1,7 @@
 from scipy.constants import sigma
 from math import cos, sqrt
 from numpy import log
+import sympy as sy
 
 LAMBDA = 0.0259580
 dynamic_viscosity_g = 1.8264e-05
@@ -85,7 +86,7 @@ def Beta_gas(temp_ref):
 
 def Rayleigh_number(Beta_gas, plate_temp, air_temp, length, density_l, cp, eta, LAMBDA):
     Ra = 1000 * (9.80665 * Beta_gas * (plate_temp - air_temp) * pow(length, 3) * pow(density_l, 2) * cp) / (
-                eta * LAMBDA)
+            eta * LAMBDA)
     return Ra
 
 
@@ -99,7 +100,7 @@ def nusselt_number_free(Ra_c, angle_vert, Ra):
     return Nu_free
 
 
-def nusselt_number_mix(Nu_erz_corrected, Nu_free, angle):
+def nusselt_number_mix(Nu_erz_corrected, Nu_free):
     # Might need to add if statement for angle
     Nu_mix = pow(pow(Nu_erz_corrected, 3) + pow(Nu_free, 3), 1 / 3)
     return Nu_mix
@@ -151,12 +152,13 @@ def solar_heat_flow(ab_fac, area,
 
 
 def plateTemp(em_fac, length, width, ab_fac, air_temp, irradiation_g, plate_temp, rel_humidity, angle,
-              wind_vel):
+              wind_vel, time):
+    plate_temp = sy.var('y')
     angle_vert = angle_to_vertical(angle)
     area = length * width
     hf_sol = solar_heat_flow(ab_fac, area, irradiation_g)
     dew_temp = dew_temperature(rel_humidity, air_temp)
-    sky_temp = sky_temperature(air_temp, dew_temp)
+    sky_temp = sky_temperature(air_temp, dew_temp, time)
     hf_rad = radiation_heat_flow(em_fac, area, plate_temp, sky_temp)
     temp_ref = reference_temperature(plate_temp, air_temp)
     cf = correction_factor(plate_temp, temp_ref)
@@ -169,6 +171,15 @@ def plateTemp(em_fac, length, width, ab_fac, air_temp, irradiation_g, plate_temp
     Nu_free = nusselt_number_free(Ra_c, angle_vert, Ra)
     Nu_erz = nusselt_number_erzw(Nu_lam, Nu_turb)
     Nu_erz_corrected = nusselt_number_erzw_corrected(cf, Nu_erz)
-    N_mix = nusselt_number_mix(Nu_erz_corrected, Nu_free, angle)
+    N_mix = nusselt_number_mix(Nu_erz_corrected, Nu_free)
     heat_ex_coeff = heat_exchange_coefficient(N_mix, LAMBDA, length)
     hf_conv = convective_heat_flow(heat_ex_coeff, area, air_temp)
+    #error with calculating hf_conv solution
+    #x = sy.solvers.solve(sy.Eq(hf_conv, 0), plate_temp)
+    print(hf_conv)
+    #print(x)
+    #return x
+
+
+#y = sy.symbols('y')
+plateTemp(0.9, 1, 1, 0.9, 21, 300, 1, 60, 20, 6, 8)
