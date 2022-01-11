@@ -105,9 +105,9 @@ def nusselt_number_mix(Nu_erz_corrected, Nu_free, angle):
     return Nu_mix
 
 
-def heat_exchange_coefficient(N_mix, LAMBDA, length):
+def heat_exchange_coefficient(Nu_mix, LAMBDA, length):
     """Calculates the heat exchange coefficient (Wärmeübergangskoeffizient), WUE P.232"""
-    hec = (N_mix * LAMBDA) / length
+    hec = (Nu_mix * LAMBDA) / length
     return hec
 
 
