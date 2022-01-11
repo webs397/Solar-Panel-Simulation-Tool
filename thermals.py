@@ -5,7 +5,7 @@ from numpy import log
 LAMBDA = 0.025958010
 dynamic_viscosity_g = 1.8264E-05
 specific_isobaric_heat_capacity_g = 1.005470208
-Temperature_surface = 294,2 
+
 
 
 def incoming_heat_flow(a_s, plate_area, irradiation_global):
