@@ -34,11 +34,11 @@ def Reynold_m(wind_velocity, length, dynamic_viscosity_g, density_g):
 
 def nusselt_number_lam(Re_m, Pr):
     """ mittlere Nu-Zahl - (8.16) S.231 """
-    N_lam = 0.664 * pow(Re_m, 1 / 2) * pow(Pr, 1 / 3)
-    return N_lam
+    Nu_lam = 0.664 * pow(Re_m, 1 / 2) * pow(Pr, 1 / 3)
+    return Nu_lam
 
 
-def heat_exchange_coefficient_lam(N_lam, LAMBDA, length):
+def heat_exchange_coefficient_lam(Nu_lam, LAMBDA, length):
     hec_lam = (N_lam * LAMBDA) / length
     return hec_lam
 
@@ -55,8 +55,8 @@ def heat_exchange_coefficient_turb(nusselt_number_turb, LAMBDA, length):
 
 
 def nusselt_number_erzw(nusselt_number_lam, nusselt_number_turb):
-    N_erzw = sqrt(pow(nusselt_number_lam, 2) + pow(nusselt_number_turb, 2))
-    return N_erzw
+    Nu_erzw = sqrt(pow(nusselt_number_lam, 2) + pow(nusselt_number_turb, 2))
+    return Nu_erzw
 
 
 def reference_temperature(plate_temp, air_temp):
@@ -69,24 +69,25 @@ def correction_factor(plate_temp, temp_ref):
     return cf
 
 
-def nusselt_number_erzw_corrected(cf, N_erzw):
-    N_erzw_corrected = cf * N_erzw
-    return N_erzw_corrected
+def nusselt_number_erzw_corrected(cf, Nu_erzw):
+    Nu_erzw_corrected = cf * N_erzw
+    return Nu_erzw_corrected
 
 def Beta_gas(temp_ref, 1)
     Beta_g = 1/temp_ref
     return Beta_g
 
-def Raylleigh_number(Beta_gas, plate_temp, air_temp, length, density_l, cp, eta, LAMBDA_l)
+def Rayleigh_number(Beta_gas, plate_temp, air_temp, length, density_l, cp, eta, LAMBDA_l)
     Ra = 1000*(9,80665 * Beta_gas * (plate_temp-air_Temp) * pow(length,3) * pow(density_l,2) * cp)/(eta * LAMBDA_l)
     return Ra
 
-def Raylleigh_number_critical(GAMMA)
+def Rayleigh_number_critical(GAMMA)
     Ra_c = pow(10, 8.9 - 0.00178 * pow(GAMMA, 1.82)) 
     return Ra_c
+
 def nusselt_number_free(Ra_c, GAMMA, Ra):
-    N_free = 0,56 pow(Ra_c * cos(GAMMA), 1/4) + 0,13(pow(Ra, 1/3) - pow(Ra_c, 1/3))
-    return N_free
+    Nu_free = 0,56 pow(Ra_c * cos(GAMMA), 1/4) + 0,13(pow(Ra, 1/3) - pow(Ra_c, 1/3))
+    return Nu_free
 
 def nusselt_number_mix(Nu_erz, Nu_free, angle):
     # Might need to add if statement for angle
