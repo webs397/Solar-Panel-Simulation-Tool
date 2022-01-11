@@ -51,6 +51,10 @@ def nusselt_number_0(nusselt_number_lam, nusselt_number_turb):
     N_0 = sqrt(pow(nusselt_number_lam, 2) + pow(nusselt_number_turb, 2))
     return N_0
 
+def Temperature_reference(Temperature_surface, air_temp)
+    T_r = (Temperature_surface+air_temp)/2
+    return T_r
+
 
 def correction_factor(Temperature_surface, Temperature_reference):
      """Temperature_surface = Bezugstemperatur """
