@@ -2,6 +2,7 @@ from scipy.constants import sigma
 from math import cos, sqrt
 from numpy import log
 
+
 LAMBDA_g = 0.0259580
 LAMBDA_l = 0.02639495
 dynamic_viscosity_g = 1.8264e-05
@@ -11,11 +12,9 @@ density_l = 1.16110661
 cp = 1.00583148
 eta = 1.855E-05
 
-
 def angle_to_vertical(angle):
     angle_vert = 90 - angle
     return angle_vert
-
 
 def incoming_heat_flow(a_s, plate_area, irradiation_global):
     """Calculates the incoming heat flow from global irradiation, output is in Watts"""
@@ -27,10 +26,7 @@ def Prandtl(dynamic_viscosity_g, specific_isobaric_heat_capacity_g, LAMBDA):
     Pr = (dynamic_viscosity_g * specific_isobaric_heat_capacity_g) / LAMBDA
     return Pr
 
-
-print(Prandtl(dynamic_viscosity_g, specific_isobaric_heat_capacity_g, LAMBDA))
-
-
+print(Prandtl(dynamic_viscosity_g,specific_isobaric_heat_capacity_g,LAMBDA))
 def Reynold_m(wind_velocity, length, dynamic_viscosity_g, density_g):
     """ mittlere Reynolds-Zahl - (8.17) S.231 """
     Re_m = (wind_velocity * length * density_g) / dynamic_viscosity_g
@@ -78,31 +74,25 @@ def nusselt_number_erzw_corrected(cf, Nu_erzw):
     Nu_erzw_corrected = cf * Nu_erzw
     return Nu_erzw_corrected
 
-
 def Beta_gas(temp_ref):
-    Beta_g = 1 / temp_ref
+    Beta_g = 1/temp_ref
     return Beta_g
 
-
 def Rayleigh_number(Beta_gas, plate_temp, air_temp, length, density_l, cp, eta, LAMBDA_l):
-    Ra = 1000 * (9.80665 * Beta_gas * (plate_temp - air_temp) * pow(length, 3) * pow(density_l, 2) * cp) / (
-                eta * LAMBDA_l)
+    Ra = 1000*(9.80665 * Beta_gas * (plate_temp-air_temp) * pow(length, 3) * pow(density_l, 2) * cp)/(eta * LAMBDA_l)
     return Ra
-
 
 def Rayleigh_number_critical(angle_vert):
     Ra_c = pow(10, 8.9 - 0.00178 * pow(angle_vert, 1.82))
     return Ra_c
 
-
 def nusselt_number_free(Ra_c, angle_vert, Ra):
-    Nu_free = 0.56 * pow(Ra_c * cos(angle_vert), 1 / 4) + 0.13 * (pow(Ra, 1 / 3) - pow(Ra_c, 1 / 3))
+    Nu_free = 0.56 * pow(Ra_c * cos(angle_vert), 1/4) + 0.13(pow(Ra, 1/3) - pow(Ra_c, 1/3))
     return Nu_free
-
 
 def nusselt_number_mix(Nu_erz, Nu_free, angle):
     # Might need to add if statement for angle
-    Nu_mix = pow(pow(Nu_erz, 3) + pow(Nu_free, 3), 1 / 3)
+    Nu_mix = pow(pow(Nu_erz, 3)+pow(Nu_free, 3), 1/3)
     return Nu_mix
 
 
@@ -166,7 +156,7 @@ def plateTemp(em_deg, length, width, solar_absorbtion_coeff, air_temp, irradiati
     Nu_lam = nusselt_number_lam(Re_m, Pr)
     Nu_turb = nusselt_number_turb(Re_m, Pr)
 
-    # THIS FUNCTION ISNT DONE YET
+    #THIS FUNCTION ISNT DONE YET
     Nu_free = nusselt_number_free()
     Nu_erz = nusselt_number_erzw(Nu_lam, Nu_turb)
     N_mix = nusselt_number_mix(Nu_erz, Nu_free, angle)
