@@ -86,8 +86,6 @@ def monthToInt(month):
         return 12
 
 
-
-
 def openWindow(self, data, inputs):
     self.w = outputWindow()
     output_layout = QHBoxLayout()
@@ -102,10 +100,12 @@ def openWindow(self, data, inputs):
 
     plate_temps = []
     for i in range(0, data[1]):
-        plate_temps = plateTemp(em_deg)
+        #SOLVER GOES HERE
+        plate_temps = plateTemp(inputs[9], inputs[4], inputs[5], inputs[8], data[1][i], data[2][i], PLATE_TEMP,
+                                inputs[3], inputs[6], inputs[9])
 
     # PLATE TEMPERATURE IN HERE
-    #temperature_graph.plot(hours, , pen=temp_pen)
+    # temperature_graph.plot(hours, , pen=temp_pen)
     output_layout.addWidget(temperature_graph)
 
     self.w.setLayout(output_layout)
@@ -169,7 +169,6 @@ class Window(QWidget):
         check_temp = QCheckBox("Show Temperature")
         meteo_data_layout.addWidget(check_temp)
 
-
         # Setup for Plate Data
 
         sp = SolarPanel()
@@ -193,14 +192,11 @@ class Window(QWidget):
         line_edit_absorb_factor = QLineEdit()
         plate_data_layout.addWidget(line_edit_absorb_factor)
         plate_data_layout.addWidget(QLabel("Emission Factor"))
-        line_edit_length = QLineEdit()
-        plate_data_layout.addWidget(line_edit_length)
+        line_edit_em_factor = QLineEdit()
+        plate_data_layout.addWidget(line_edit_em_factor)
 
-
-
-        #verticalSpacer = QSpacerItem(10, 10)
-        #plate_data_layout.addSpacerItem(verticalSpacer)
-
+        # verticalSpacer = QSpacerItem(10, 10)
+        # plate_data_layout.addSpacerItem(verticalSpacer)
 
         # Setup for Map Side Layout
         web_view = QWebEngineView()
@@ -221,7 +217,9 @@ class Window(QWidget):
         def calculateClicked():
             inputs = [cb_month.currentText(), line_edit_windspeed.text(), line_edit_winddirection.text(),
                       line_edit_rel_humidity.text(), line_edit_length.text(), line_edit_width.text(),
-                      line_edit_angle.text(), line_edit_azimuth.text()]
+                      line_edit_angle.text(), line_edit_azimuth.text(), line_edit_absorb_factor.text(),
+                      line_edit_em_factor.text()]
+
             inputs[0] = monthToInt(inputs[0])
             coords = tuple(float(x) for x in coord_line_edit.text().split(','))
             if check_g_irrad.isChecked():
@@ -239,7 +237,7 @@ class Window(QWidget):
             pvgis_data = get_daily_data(coords[0], coords[1], inputs[0], inputs[1], inputs[2], b_global,
                                         b_clearsky, b_temp, 0)
 
-            openWindow(self, pvgis_data)
+            openWindow(self, pvgis_data, inputs)
 
             print(coords)
             print(b_global)
