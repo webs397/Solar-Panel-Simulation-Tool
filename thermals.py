@@ -77,8 +77,8 @@ def Beta_gas(temp_ref):
     Beta_g = 1/temp_ref
     return Beta_g
 
-def Rayleigh_number(Beta_gas, plate_temp, air_temp, length, density_l, cp, eta, LAMBDA_l):
-    Ra = 1000*(9.80665 * Beta_gas * (plate_temp-air_temp) * pow(length, 3) * pow(density_l, 2) * cp)/(eta * LAMBDA_l)
+def Rayleigh_number(Beta_gas, plate_temp, air_temp, length, density_l, cp, eta, LAMBDA):
+    Ra = 1000*(9.80665 * Beta_gas * (plate_temp-air_temp) * pow(length, 3) * pow(density_l, 2) * cp)/(eta * LAMBDA)
     return Ra
 
 def Rayleigh_number_critical(angle_vert):
