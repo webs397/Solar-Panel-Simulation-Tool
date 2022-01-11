@@ -2,7 +2,10 @@ from scipy.constants import sigma
 from math import cos, sqrt
 from numpy import log
 
-LAMBDA = 0.0260
+LAMBDA = 0.025958010
+dynamic_viscosity_g = 1.8264E-05
+specific_isobaric_heat_capacity_g = 1.005470208
+
 
 
 def incoming_heat_flow(a_s, plate_area, irradiation_global):
@@ -50,6 +53,7 @@ def nusselt_number_0(nusselt_number_lam, nusselt_number_turb):
 
 
 def correction_factor(Temperature_surface, Temperature_reference):
+     """Temperature_surface = Bezugstemperatur """
     cf = pow(Temperature_reference / Temperature_surface, 0.12)
     return cf
 
