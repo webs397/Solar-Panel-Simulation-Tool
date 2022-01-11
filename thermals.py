@@ -17,7 +17,7 @@ def Prandtl(dynamic_viscosity_g, specific_isobaric_heat_capacity_g, LAMBDA):
     Pr = (dynamic_viscosity_g * specific_isobaric_heat_capacity_g) / LAMBDA
     return Pr
 
-
+print(Prandtl(dynamic_viscosity_g,specific_isobaric_heat_capacity_g,LAMBDA))
 def Reynold_m(wind_velocity, length, dynamic_viscosity_g, density_g):
     """ mittlere Reynolds-Zahl - (8.17) S.231 """
     Re_m = (wind_velocity * length * density_g) / dynamic_viscosity_g
@@ -47,8 +47,8 @@ def heat_exchange_coefficient_turb(nusselt_number_turb, LAMBDA, length):
 
 
 def nusselt_number_erzw(nusselt_number_lam, nusselt_number_turb):
-    N_0 = sqrt(pow(nusselt_number_lam, 2) + pow(nusselt_number_turb, 2))
-    return N_0
+    N_erzw = sqrt(pow(nusselt_number_lam, 2) + pow(nusselt_number_turb, 2))
+    return N_erzw
 
 
 def reference_temperature(plate_temp, air_temp):
@@ -61,14 +61,22 @@ def correction_factor(plate_temp, temp_ref):
     return cf
 
 
-def nusselt_number_m(cf, N_0):
-    N_m = cf * N_0
-    return N_m
+def nusselt_number_erzw_corrected(cf, N_erzw):
+    N_erzw_corrected = cf * N_erzw
+    return N_erzw_corrected
+
+def nusselt_number_free():
+    return
+
+def nusselt_number_mix(Nu_erz, Nu_free, angle):
+    # Might need to add if statement for angle
+    Nu_mix = pow(pow(Nu_erz, 3)+pow(Nu_free, 3), 1/3)
+    return Nu_mix
 
 
-def heat_exchange_coefficient(N_m, LAMBDA, length):
+def heat_exchange_coefficient(N_mix, LAMBDA, length):
     """Calculates the heat exchange coefficient (Wärmeübergangskoeffizient), WUE P.232"""
-    hec = (N_m * LAMBDA) / length
+    hec = (N_mix * LAMBDA) / length
     return hec
 
 
@@ -111,13 +119,23 @@ def solar_heat_flow(solar_absorbtion_coeff, area,
     return shf
 
 
-def plateTemp(em_deg, length, width, solar_absorbtion_coeff, air_temp, irradiation_g, plate_temp, rel_humidity):
+def plateTemp(em_deg, length, width, solar_absorbtion_coeff, air_temp, irradiation_g, plate_temp, rel_humidity, angle,
+              wind_vel):
     area = length * width
     hf_sol = solar_heat_flow(solar_absorbtion_coeff, area, irradiation_g)
     dew_temp = dew_temperature(rel_humidity, air_temp)
     sky_temp = sky_temperature(air_temp, dew_temp)
     hf_rad = radiation_heat_flow(em_deg, area, plate_temp, sky_temp)
-    cf = correction_factor(plate_temp, )
-    N_m = nusselt_number_m(cf, N_0)
-    heat_ex_coeff = heat_exchange_coefficient(N_m, LAMBDA, length)
+    temp_ref = reference_temperature(plate_temp, air_temp)
+    cf = correction_factor(plate_temp, temp_ref)
+    Pr = Prandtl(dynamic_viscosity_g, specific_isobaric_heat_capacity_g, LAMBDA)
+    Re_m = Reynold_m(wind_vel, length, dynamic_viscosity_g, density_g)
+    Nu_lam = nusselt_number_lam(Re_m, Pr)
+    Nu_turb = nusselt_number_turb(Re_m, Pr)
+
+    #THIS FUNCTION ISNT DONE YET
+    Nu_free = nusselt_number_free()
+    Nu_erz = nusselt_number_erzw(Nu_lam, Nu_turb)
+    N_mix = nusselt_number_mix(Nu_erz, Nu_free, angle)
+    heat_ex_coeff = heat_exchange_coefficient(N_mix, LAMBDA, length)
     hf_conv = convective_heat_flow(heat_ex_coeff, area, air_temp)
