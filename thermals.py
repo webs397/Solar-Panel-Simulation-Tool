@@ -4,22 +4,22 @@ from numpy import log
 import sympy as sy
 
 # Alle Werte nach VDI Waerme Atlas
-# Waermeleitfaehigkeit von Luft bei ca. 25°C [mW/(mK)]
-heat_cond_l = 0.0259580
-# Dynamische Viskositaet Luft [10e-6 Pa s]
-dynamic_viscosity_l = 1.8264e-05
-# Spezifische Waermekapazitaet von Luft bei ca. 25°C [in kJ/(kg K)
-specific_isobar_heat_cap_l = 1.006
+# Waermeleitfaehigkeit von Luft bei 25°C [W/(mK)]
+heat_cond_l = 0.02625
+# Dynamische Viskositaet von Luft bei 25°C [Pa s]
+dynamic_viscosity_l = 1.845e-05
+# Kinematische Viskositaet von Luft bei 25°C[m2/s]
+kinematik_visc_l = 1.579e-05
+# Spezifische Waermekapazitaet von Luft bei 25°C [kJ/(kg K)
+specific_isobar_heat_cap_l = 1.007
+# Temperaturleitfaehigkeit von Luft bei 25°C [m2/s]
+temp_conductivity_l = 2.232e-05
 # Prandtl Zahl  von Trockener Luft bei 25°C und 1 bar
 prandtl = 0.7075
 # Dichte voon Luift bei 25°C und 1 bar [kg/m3]
 density_l = 1.169
 
-
-
-cp = 1.00583148
-
-
+gravity = 9.80665
 
 
 def temp_kelvin(temp):
@@ -91,9 +91,9 @@ def Beta_gas(temp_ref):
     return Beta_g
 
 
-def Rayleigh_number(Beta_gas, plate_temp, air_temp, length, density_l, cp, dynamic_viscosity_l, specific_isobar_heat_cap_l):
-    Ra = 1000 * (9.80665 * Beta_gas * (plate_temp - air_temp) * pow(length, 3) * pow(density_l, 2) * cp) / (
-            dynamic_viscosity_l * specific_isobar_heat_cap_l)
+def Rayleigh_number(gravity, Beta_gas, plate_temp, air_temp, length, kinematik_visc_l, temp_conductivity_l):
+    Ra = (gravity * Beta_gas * (plate_temp - air_temp) * pow(length, 3)) / (
+            kinematik_visc_l * temp_conductivity_l)
     return Ra
 
 
@@ -123,7 +123,6 @@ def convective_heat_flow(heat_exchange_coefficient, plate_area, air_temp, plate_
     """Calculates the convective heat flow across the plate"""
     chf = heat_exchange_coefficient * plate_area * (plate_temp - air_temp)
     return chf
-
 
 
 def dew_temperature(rel_humidity, air_temp):
@@ -179,7 +178,8 @@ def plateTemp(em_fac, length, width, ab_fac, air_temp, irradiation_g, plate_temp
     Nu_lam = nusselt_number_lam(Re_m, prandtl)
     Nu_turb = nusselt_number_turb(Re_m, prandtl)
     Ra_c = Rayleigh_number_critical(angle_vert)
-    Ra = Rayleigh_number(Beta_gas(temp_ref), plate_temp, air_temp, length, density_l, cp, dynamic_viscosity_l, specific_isobar_heat_cap_l)
+    Ra = Rayleigh_number(Beta_gas(temp_ref), plate_temp, air_temp, length, density_l, cp, dynamic_viscosity_l,
+                         specific_isobar_heat_cap_l)
     Nu_free = nusselt_number_free(Ra_c, angle_vert, Ra)
     Nu_erz = nusselt_number_erzw(Nu_lam, Nu_turb)
     Nu_erz_corrected = nusselt_number_erzw_corrected(cf, Nu_erz)
@@ -197,6 +197,5 @@ def plateTemp(em_fac, length, width, ab_fac, air_temp, irradiation_g, plate_temp
 # plateTemp(0.9, 1, 1, 0.9, 21, 300, 1, 60, 20, 6, 8)
 print("Plate Temp: ", temp_kelvin(37.66))
 print("Air Temp: ", temp_kelvin(16))
-print("Rayleigh: ",Rayleigh_number(0.00333,310.80999,289.15,0.3,density_l,cp,dynamic_viscosity_l,specific_isobar_heat_cap_l))
-print(Rayleigh_number_critical(60))
-print(nusselt_number_free(Rayleigh_number_critical(60),60,53000000))
+print("Rayleigh: ", Rayleigh_number(gravity,Beta_gas(reference_temperature(310.8,289.15)),310.8,289.15,0.3, kinematik_visc_l,temp_conductivity_l))
+print(nusselt_number_free(Rayleigh_number_critical(60), 60, 53000000))
