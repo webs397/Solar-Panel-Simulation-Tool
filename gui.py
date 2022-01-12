@@ -8,7 +8,8 @@ import folium
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 import pyqtgraph as pg
 from communication import get_daily_data
-from thermals import plateTemp
+from thermals import f
+import scipy
 
 
 class NumberLineEdit(QLineEdit):
@@ -99,13 +100,13 @@ def openWindow(self, data, inputs):
     temperature_graph.plot(hours, data[1], pen=airtemp_pen)
 
     plate_temps = []
-    for i in range(0, data[1]):
-        #SOLVER GOES HERE
-        plate_temps = plateTemp(inputs[9], inputs[4], inputs[5], inputs[8], data[1][i], data[2][i], PLATE_TEMP,
-                                inputs[3], inputs[6], inputs[9])
+    for i in range(0, len(data[1])):
+        print("Inputs: " ,inputs[9], inputs[4], inputs[5], inputs[8], data[1][i], data[2][i], inputs[3], inputs[6], inputs[9], hours[i])
+        a = scipy.optimize.newton(f, 0, args=[inputs[9], inputs[4], inputs[5], inputs[8], data[1][i], data[2][i], inputs[3], inputs[6], inputs[9], hours[i]], maxiter=10000)
+        plate_temps.append(a.real)
+    temperature_graph.plot(hours, plate_temps, pen=temp_pen)
 
-    # PLATE TEMPERATURE IN HERE
-    # temperature_graph.plot(hours, , pen=temp_pen)
+    #ADD CLEAR SKY HERE NEED BOOL THO
     output_layout.addWidget(temperature_graph)
 
     self.w.setLayout(output_layout)
@@ -215,10 +216,10 @@ class Window(QWidget):
         left_layout.addLayout(lat_lon_layout)
 
         def calculateClicked():
-            inputs = [cb_month.currentText(), line_edit_windspeed.text(), line_edit_winddirection.text(),
-                      line_edit_rel_humidity.text(), line_edit_length.text(), line_edit_width.text(),
-                      line_edit_angle.text(), line_edit_azimuth.text(), line_edit_absorb_factor.text(),
-                      line_edit_em_factor.text()]
+            inputs = [cb_month.currentText(), float(line_edit_windspeed.text()), float(line_edit_winddirection.text()),
+                      float(line_edit_rel_humidity.text()), float(line_edit_length.text()), float(line_edit_width.text()),
+                      float(line_edit_angle.text()), float(line_edit_azimuth.text()), float(line_edit_absorb_factor.text()),
+                      float(line_edit_em_factor.text())]
 
             inputs[0] = monthToInt(inputs[0])
             coords = tuple(float(x) for x in coord_line_edit.text().split(','))

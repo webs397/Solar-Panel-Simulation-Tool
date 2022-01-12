@@ -23,9 +23,16 @@ def get_daily_data(lat, lon, month, angle, azimuth, b_global, b_clearsky, b_temp
 
     i_global = []
     for i in range(0, len(data['outputs']['daily_profile'])):
-        i_global.append(data['outputs']['daily_profile'][i]["T2m"])
+        print("Global: ", data['outputs']['daily_profile'][i]["G(i)"])
+        i_global.append(data['outputs']['daily_profile'][i]["G(i)"])
 
-    proc_data = (hours, temps, i_global)
+    i_clearsky = []
+    for i in range(0, len(data['outputs']['daily_profile'])):
+        print("Global: ", data['outputs']['daily_profile'][i]["Gcs(i)"])
+        i_global.append(data['outputs']['daily_profile'][i]["Gcs(i)"])
+
+
+    proc_data = (hours, temps, i_global, i_clearsky)
     return proc_data
 
 

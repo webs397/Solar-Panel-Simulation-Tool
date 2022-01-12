@@ -137,7 +137,7 @@ def nusselt_number_free_24(Ra, angle):
     Nu_free = 0.56 * (
         pow(Rayleigh_number_critical(angle_to_vertical(angle * pi / 180) * cos(angle_to_vertical(angle * pi / 180))),
             1 / 4)) + 0.13 * (
-                      pow(Ra, 1 / 3) - pow(Rayleigh_number_critical(angle_to_vertical(angle * pi / 180)), 1 / 3))
+                          pow(Ra, 1 / 3) - pow(Rayleigh_number_critical(angle_to_vertical(angle * pi / 180)), 1 / 3))
     return Nu_free
 
 
@@ -207,7 +207,7 @@ def f(x, em_fac, length, width, ab_fac, air_temp, irradiation_g, rel_humidity, a
     x = temp_kelvin(x)
     air_temp = temp_kelvin(air_temp)
     plate_temp = x
-    angle_vert = angle_to_vertical(angle)
+    # angle_vert = angle_to_vertical(angle)
     area = length * width
     hf_sol = solar_heat_flow(ab_fac, area, irradiation_g)
     dew_temp = dew_temperature(rel_humidity, air_temp)
@@ -218,7 +218,7 @@ def f(x, em_fac, length, width, ab_fac, air_temp, irradiation_g, rel_humidity, a
     Re_m = Reynold_m(wind_vel, length, dynamic_viscosity_l, density_l)
     Nu_lam = nusselt_number_lam(Re_m, prandtl)
     Nu_turb = nusselt_number_turb(Re_m, prandtl)
-    Ra_c = Rayleigh_number_critical(angle_vert)
+    # Ra_c = Rayleigh_number_critical(angle_vert)
     Ra = Rayleigh_number(gravity, Beta_gas(temp_ref), plate_temp, air_temp, length, kinematik_visc_l,
                          temp_conductivity_l)
     Nu_free = nusselt_number_free_24(Ra, angle)
@@ -227,10 +227,10 @@ def f(x, em_fac, length, width, ab_fac, air_temp, irradiation_g, rel_humidity, a
     N_mix = nusselt_number_mix(Nu_erz_corrected, Nu_free)
     heat_ex_coeff = heat_exchange_coefficient(N_mix, length)
     hf_conv = convective_heat_flow(heat_ex_coeff, area, air_temp, plate_temp)
-    # error with calculating hf_conv solution
     return (hf_sol - hf_conv - hf_rad)
 
 
-a = scipy.optimize.newton(f, 10, args=[0.92, 1, 1, 0.9, 16, 1000, 50, 30, 11, 8], maxiter=10000)
+#a = scipy.optimize.newton(f, 0, args=[0.9, 1.0, 1.0, 0.9, 1.5, 1.5, 50.0, 30.0, 0.9, 0], maxiter=100000)
 
-print("Plate Temperature:", a)
+#print("Plate Temperature:", a)
+#print(a.real)
