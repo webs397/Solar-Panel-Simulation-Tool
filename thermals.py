@@ -1,3 +1,4 @@
+import scipy.optimize
 from scipy.constants import sigma
 from math import cos, sqrt, pi
 from numpy import log
@@ -149,9 +150,9 @@ def nusselt_number_mix(Nu_erz_corrected, Nu_free):
     return Nu_mix
 
 
-def heat_exchange_coefficient(Nu_mix, LAMBDA, length):
+def heat_exchange_coefficient(Nu_mix, length):
     """Calculates the heat exchange coefficient (Wärmeübergangskoeffizient), WUE P.232"""
-    hec = (Nu_mix * LAMBDA) / length
+    hec = (Nu_mix * heat_cond_l) / length
     return hec
 
 
@@ -171,7 +172,8 @@ def dew_temperature(rel_humidity, air_temp):
     air_temp = air_temp - 273.15
     dew_temp = b * (log(rel_humidity / 100) + (a * air_temp / (b + air_temp))) / (
             a - log(rel_humidity / 100) - ((a * air_temp) / (b + air_temp)))
-    dew_temp = dew_temp + 273.15
+    # this should be °C
+    dew_temp = dew_temp
     return dew_temp
 
 
@@ -201,7 +203,7 @@ def plateTemp(em_fac, length, width, ab_fac, air_temp, irradiation_g, plate_temp
               wind_vel, time):
     plate_temp = temp_kelvin(plate_temp)
     air_temp = temp_kelvin(air_temp)
-    plate_temp = sy.var('y')
+    #plate_temp = sy.var('y')
     angle_vert = angle_to_vertical(angle)
     area = length * width
     hf_sol = solar_heat_flow(ab_fac, area, irradiation_g)
@@ -219,17 +221,18 @@ def plateTemp(em_fac, length, width, ab_fac, air_temp, irradiation_g, plate_temp
     Nu_erz = nusselt_number_erzw(Nu_lam, Nu_turb)
     Nu_erz_corrected = nusselt_number_erzw_corrected(cf, Nu_erz)
     N_mix = nusselt_number_mix(Nu_erz_corrected, Nu_free)
-    heat_ex_coeff = heat_exchange_coefficient(N_mix, specific_isobar_heat_cap_l, length)
+    heat_ex_coeff = heat_exchange_coefficient(N_mix, length)
     hf_conv = convective_heat_flow(heat_ex_coeff, area, air_temp,plate_temp)
     # error with calculating hf_conv solution
-    x = sy.solvers.solve(sy.Eq(hf_conv, 0), plate_temp)
+    print(hf_conv)
+    #x = sy.solvers.solve(hf_sol-hf_conv-hf_rad, y)
     print(hf_sol-hf_conv-hf_rad)
-    print(x)
-    return x
+    #print(x)
+    #return x
 
 
 y = sy.symbols('y')
-plateTemp(0.9, 1, 1, 0.9, 21, 300, y, 60, 20, 6, 8)
+plateTemp(0.92, 0.3, 0.3, 0.9, 16, 680, 37.66, 60, 30, 2.5, 9)
 #print("Plate Temp: ", temp_kelvin(37.66))
 #print("Air Temp: ", temp_kelvin(16))
 #print("Rayleigh: ",
