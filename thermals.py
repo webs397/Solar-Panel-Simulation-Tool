@@ -3,13 +3,28 @@ from math import cos, sqrt
 from numpy import log
 import sympy as sy
 
-LAMBDA = 0.0259580
-dynamic_viscosity_g = 1.8264e-05
-specific_isobaric_heat_capacity_g = 1.005470208
-density_g = 1.420943445
-density_l = 1.16110661
+# Alle Werte nach VDI Waerme Atlas
+# Waermeleitfaehigkeit von Luft bei ca. 25°C [mW/(mK)]
+heat_cond_l = 0.0259580
+# Dynamische Viskositaet Luft [10e-6 Pa s]
+dynamic_viscosity_l = 1.8264e-05
+# Spezifische Waermekapazitaet von Luft bei ca. 25°C [in kJ/(kg K)
+specific_isobar_heat_cap_l = 1.006
+# Prandtl Zahl  von Trockener Luft bei 25°C und 1 bar
+prandtl = 0.7075
+# Dichte voon Luift bei 25°C und 1 bar [kg/m3]
+density_l = 1.169
+
+
+
 cp = 1.00583148
-eta = 1.855E-05
+
+
+
+
+def temp_kelvin(temp):
+    temp_kelvin = temp + 273.15
+    return temp_kelvin
 
 
 def angle_to_vertical(angle):
@@ -23,17 +38,9 @@ def incoming_heat_flow(a_s, plate_area, irradiation_global):
     return ihf
 
 
-def Prandtl(dynamic_viscosity_g, specific_isobaric_heat_capacity_g, LAMBDA):
-    Pr = (dynamic_viscosity_g * specific_isobaric_heat_capacity_g) / LAMBDA
-    return Pr
-
-
-print(Prandtl(dynamic_viscosity_g, specific_isobaric_heat_capacity_g, LAMBDA))
-
-
-def Reynold_m(wind_velocity, length, dynamic_viscosity_g, density_g):
+def Reynold_m(wind_velocity, length, dynamic_viscosity_l, density_l):
     """ mittlere Reynolds-Zahl - (8.17) S.231 """
-    Re_m = (wind_velocity * length * density_g) / dynamic_viscosity_g
+    Re_m = (wind_velocity * length * density_l) / dynamic_viscosity_l
     return Re_m
 
 
@@ -43,8 +50,8 @@ def nusselt_number_lam(Re_m, Pr):
     return Nu_lam
 
 
-def heat_exchange_coefficient_lam(Nu_lam, LAMBDA, length):
-    hec_lam = (Nu_lam * LAMBDA) / length
+def heat_exchange_coefficient_lam(Nu_lam, specific_isobar_heat_cap_l, length):
+    hec_lam = (Nu_lam * specific_isobar_heat_cap_l) / length
     return hec_lam
 
 
@@ -54,8 +61,8 @@ def nusselt_number_turb(Re_m, Pr):
     return N_turb
 
 
-def heat_exchange_coefficient_turb(nusselt_number_turb, LAMBDA, length):
-    hec_turb = (nusselt_number_turb * LAMBDA) / length
+def heat_exchange_coefficient_turb(nusselt_number_turb, specific_isobar_heat_cap_l, length):
+    hec_turb = (nusselt_number_turb * specific_isobar_heat_cap_l) / length
     return hec_turb
 
 
@@ -84,9 +91,9 @@ def Beta_gas(temp_ref):
     return Beta_g
 
 
-def Rayleigh_number(Beta_gas, plate_temp, air_temp, length, density_l, cp, eta, LAMBDA):
+def Rayleigh_number(Beta_gas, plate_temp, air_temp, length, density_l, cp, dynamic_viscosity_l, specific_isobar_heat_cap_l):
     Ra = 1000 * (9.80665 * Beta_gas * (plate_temp - air_temp) * pow(length, 3) * pow(density_l, 2) * cp) / (
-            eta * LAMBDA)
+            dynamic_viscosity_l * specific_isobar_heat_cap_l)
     return Ra
 
 
@@ -112,9 +119,9 @@ def heat_exchange_coefficient(Nu_mix, LAMBDA, length):
     return hec
 
 
-def convective_heat_flow(heat_exchange_coefficient, plate_area, air_temp):
+def convective_heat_flow(heat_exchange_coefficient, plate_area, air_temp, plate_temp):
     """Calculates the convective heat flow across the plate"""
-    chf = heat_exchange_coefficient * plate_area * air_temp
+    chf = heat_exchange_coefficient * plate_area * (plate_temp - air_temp)
     return chf
 
 
@@ -122,10 +129,13 @@ def dew_temperature(rel_humidity, air_temp):
     """Calculates dewpoint temperature as referred to in The Relationship between Relative
         Humidity and the Dewpoint Temperature in Moist Air A Simple Conversion and Applications
         BY MARK G. LAWRENCE 2005 """
+    # Conversion to °C and back to K is necessary
     b = 243.04
     a = 17.625
+    air_temp = air_temp - 273.15
     dew_temp = b * (log(rel_humidity / 100) + (a * air_temp / (b + air_temp))) / (
             a - log(rel_humidity / 100) - ((a * air_temp) / (b + air_temp)))
+    dew_temp = dew_temp + 273.15
     return dew_temp
 
 
@@ -153,6 +163,8 @@ def solar_heat_flow(ab_fac, area,
 
 def plateTemp(em_fac, length, width, ab_fac, air_temp, irradiation_g, plate_temp, rel_humidity, angle,
               wind_vel, time):
+    plate_temp = temp_kelvin(plate_temp)
+    air_temp = temp_kelvin(air_temp)
     plate_temp = sy.var('y')
     angle_vert = angle_to_vertical(angle)
     area = length * width
@@ -162,24 +174,28 @@ def plateTemp(em_fac, length, width, ab_fac, air_temp, irradiation_g, plate_temp
     hf_rad = radiation_heat_flow(em_fac, area, plate_temp, sky_temp)
     temp_ref = reference_temperature(plate_temp, air_temp)
     cf = correction_factor(plate_temp, temp_ref)
-    Pr = Prandtl(dynamic_viscosity_g, specific_isobaric_heat_capacity_g, LAMBDA)
-    Re_m = Reynold_m(wind_vel, length, dynamic_viscosity_g, density_g)
-    Nu_lam = nusselt_number_lam(Re_m, Pr)
-    Nu_turb = nusselt_number_turb(Re_m, Pr)
+    Re_m = Reynold_m(wind_vel, length, dynamic_viscosity_l, density_l)
+    Nu_lam = nusselt_number_lam(Re_m, prandtl)
+    Nu_turb = nusselt_number_turb(Re_m, prandtl)
     Ra_c = Rayleigh_number_critical(angle_vert)
-    Ra = Rayleigh_number(Beta_gas(temp_ref), plate_temp, air_temp, length, density_l, cp, eta, LAMBDA)
+    Ra = Rayleigh_number(Beta_gas(temp_ref), plate_temp, air_temp, length, density_l, cp, dynamic_viscosity_l, specific_isobar_heat_cap_l)
     Nu_free = nusselt_number_free(Ra_c, angle_vert, Ra)
     Nu_erz = nusselt_number_erzw(Nu_lam, Nu_turb)
     Nu_erz_corrected = nusselt_number_erzw_corrected(cf, Nu_erz)
     N_mix = nusselt_number_mix(Nu_erz_corrected, Nu_free)
-    heat_ex_coeff = heat_exchange_coefficient(N_mix, LAMBDA, length)
+    heat_ex_coeff = heat_exchange_coefficient(N_mix, specific_isobar_heat_cap_l, length)
     hf_conv = convective_heat_flow(heat_ex_coeff, area, air_temp)
-    #error with calculating hf_conv solution
-    #x = sy.solvers.solve(sy.Eq(hf_conv, 0), plate_temp)
-    print(hf_conv)
-    #print(x)
-    #return x
+    # error with calculating hf_conv solution
+    # x = sy.solvers.solve(sy.Eq(hf_conv, 0), plate_temp)
+
+    # print(x)
+    # return x
 
 
-#y = sy.symbols('y')
-plateTemp(0.9, 1, 1, 0.9, 21, 300, 1, 60, 20, 6, 8)
+# y = sy.symbols('y')
+# plateTemp(0.9, 1, 1, 0.9, 21, 300, 1, 60, 20, 6, 8)
+print("Plate Temp: ", temp_kelvin(37.66))
+print("Air Temp: ", temp_kelvin(16))
+print("Rayleigh: ",Rayleigh_number(0.00333,310.80999,289.15,0.3,density_l,cp,dynamic_viscosity_l,specific_isobar_heat_cap_l))
+print(Rayleigh_number_critical(60))
+print(nusselt_number_free(Rayleigh_number_critical(60),60,53000000))
