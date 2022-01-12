@@ -102,8 +102,9 @@ def Rayleigh_number_critical(angle_vert):
     return Ra_c
 
 
-def nusselt_number_free(Ra_c, angle_vert, Ra):
-    Nu_free = 0.56 * pow(Ra_c * cos(angle_vert), 1 / 4) + 0.13 * (pow(Ra, 1 / 3) - pow(Ra_c, 1 / 3))
+def nusselt_number_free(Ra):
+    Nu_free = pow(prandtl / 5, 1 / 5) * ((pow(prandtl, 1 / 2)) / (0.25 + 1.6 * pow(prandtl, 1 / 2))) * pow(
+        (Ra / prandtl), 1 / 5)
     return Nu_free
 
 
@@ -197,5 +198,7 @@ def plateTemp(em_fac, length, width, ab_fac, air_temp, irradiation_g, plate_temp
 # plateTemp(0.9, 1, 1, 0.9, 21, 300, 1, 60, 20, 6, 8)
 print("Plate Temp: ", temp_kelvin(37.66))
 print("Air Temp: ", temp_kelvin(16))
-print("Rayleigh: ", Rayleigh_number(gravity,Beta_gas(reference_temperature(310.8,289.15)),310.8,289.15,0.3, kinematik_visc_l,temp_conductivity_l))
-print(nusselt_number_free(Rayleigh_number_critical(60), 60, 53000000))
+print("Rayleigh: ",
+      Rayleigh_number(gravity, Beta_gas(reference_temperature(310.8, 289.15)), 310.8, 289.15, 0.3, kinematik_visc_l,
+                      temp_conductivity_l))
+print(nusselt_number_free(1.670e10))
