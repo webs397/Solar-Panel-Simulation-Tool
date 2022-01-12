@@ -1,5 +1,5 @@
 from scipy.constants import sigma
-from math import cos, sqrt
+from math import cos, sqrt, pi
 from numpy import log
 import sympy as sy
 
@@ -97,12 +97,47 @@ def Rayleigh_number(gravity, Beta_gas, plate_temp, air_temp, length, kinematik_v
     return Ra
 
 
-def Rayleigh_number_critical(angle_vert):
-    Ra_c = pow(10, 8.9 - 0.00178 * pow(angle_vert, 1.82))
+def Rayleigh_number_critical(angle):
+    Ra_c = pow(10, 8.9 - 0.00178 * pow(angle_to_vertical(angle*pi/180), 1.82))
     return Ra_c
 
+def funct2_pr(prandtl):
+    funct2_pr = (1+(0.322/prandtl)**(11/20))**(-20/11)
+    return funct2_pr
 
-def nusselt_number_free(Ra):
+def nusselt_number_free_7(Ra):
+    Nu_free =  0.766*(Ra*funct2_pr(prandtl))**(1/5)
+    return Nu_free
+
+def nusselt_number_free_8(Ra):
+    Nu_free = 0.15*(Ra*funct2_pr(prandtl))**(1/3)
+    return Nu_free
+
+def nusselt_number_free_14(Ra):
+    Nu_free = 0.56 * pow((prandtl/0.846 + prandtl) * Ra, 1 / 4) + 2
+    return Nu_free
+
+
+def funct_pr(prandtl):
+    funct_pr = (1 + (0.492 / prandtl) ** (9 / 16)) ** (-16 / 9)
+    return funct_pr
+
+
+
+def nusselt_number_free_21(Ra, angle):
+    Nu_free = (0.825 + 0.387 * (Ra * cos(angle_to_vertical(angle * pi / 180)) * funct_pr(prandtl)) ** (1 / 6)) ** 2
+    return Nu_free
+
+
+def nusselt_number_free_24(Ra, angle):
+    Nu_free = 0.56 * (
+        pow(Rayleigh_number_critical(angle_to_vertical(angle * pi / 180) * cos(angle_to_vertical(angle * pi / 180))),
+            1 / 4)) + 0.13 * (
+                      pow(Ra, 1 / 3) - pow(Rayleigh_number_critical(angle_to_vertical(angle * pi / 180)), 1 / 3))
+    return Nu_free
+
+
+def nusselt_number_free_25(Ra):
     Nu_free = pow(prandtl / 5, 1 / 5) * ((pow(prandtl, 1 / 2)) / (0.25 + 1.6 * pow(prandtl, 1 / 2))) * pow(
         (Ra / prandtl), 1 / 5)
     return Nu_free
@@ -179,26 +214,30 @@ def plateTemp(em_fac, length, width, ab_fac, air_temp, irradiation_g, plate_temp
     Nu_lam = nusselt_number_lam(Re_m, prandtl)
     Nu_turb = nusselt_number_turb(Re_m, prandtl)
     Ra_c = Rayleigh_number_critical(angle_vert)
-    Ra = Rayleigh_number(Beta_gas(temp_ref), plate_temp, air_temp, length, density_l, cp, dynamic_viscosity_l,
-                         specific_isobar_heat_cap_l)
-    Nu_free = nusselt_number_free(Ra_c, angle_vert, Ra)
+    Ra = Rayleigh_number(gravity,Beta_gas(temp_ref),plate_temp,air_temp,length,kinematik_visc_l,temp_conductivity_l)
+    Nu_free = nusselt_number_free_24(Ra, angle)
     Nu_erz = nusselt_number_erzw(Nu_lam, Nu_turb)
     Nu_erz_corrected = nusselt_number_erzw_corrected(cf, Nu_erz)
     N_mix = nusselt_number_mix(Nu_erz_corrected, Nu_free)
     heat_ex_coeff = heat_exchange_coefficient(N_mix, specific_isobar_heat_cap_l, length)
-    hf_conv = convective_heat_flow(heat_ex_coeff, area, air_temp)
+    hf_conv = convective_heat_flow(heat_ex_coeff, area, air_temp,plate_temp)
     # error with calculating hf_conv solution
-    # x = sy.solvers.solve(sy.Eq(hf_conv, 0), plate_temp)
+    x = sy.solvers.solve(sy.Eq(hf_conv, 0), plate_temp)
+    print(hf_sol-hf_conv-hf_rad)
+    print(x)
+    return x
 
-    # print(x)
-    # return x
 
-
-# y = sy.symbols('y')
-# plateTemp(0.9, 1, 1, 0.9, 21, 300, 1, 60, 20, 6, 8)
-print("Plate Temp: ", temp_kelvin(37.66))
-print("Air Temp: ", temp_kelvin(16))
-print("Rayleigh: ",
-      Rayleigh_number(gravity, Beta_gas(reference_temperature(310.8, 289.15)), 310.8, 289.15, 0.3, kinematik_visc_l,
-                      temp_conductivity_l))
-print(nusselt_number_free(1.670e10))
+y = sy.symbols('y')
+plateTemp(0.9, 1, 1, 0.9, 21, 300, y, 60, 20, 6, 8)
+#print("Plate Temp: ", temp_kelvin(37.66))
+#print("Air Temp: ", temp_kelvin(16))
+#print("Rayleigh: ",
+      #Rayleigh_number(gravity, 1 / 283, 303, 283, 2, 2.2e-5,
+                     # 15.1e-6))
+#print("25 Nusselt Free: ", nusselt_number_free_25(5.3e7))
+#print("24 Nusselt Free: ", nusselt_number_free_24(5.3e7, 30))
+#print("21 Nusselt Free: ", nusselt_number_free_21(5.3e7, 30))
+#print("14 Nusselt Free: ", nusselt_number_free_14(5.3e7))
+#print("8 Nusselt Free: ", nusselt_number_free_8(5.3e7))
+#print("7 Nusselt Free: ", nusselt_number_free_7(5.3e7))
