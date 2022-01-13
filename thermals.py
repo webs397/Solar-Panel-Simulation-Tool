@@ -1,8 +1,7 @@
-import scipy.optimize
 from scipy.constants import sigma
 from math import cos, sqrt, pi
 from numpy import log
-import sympy as sy
+
 
 # Alle Werte nach VDI Waerme Atlas
 # Waermeleitfaehigkeit von Luft bei 25°C [W/(mK)]
