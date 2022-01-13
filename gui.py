@@ -1,15 +1,35 @@
-import sys
 import io
-from ModelPanel import SolarPanel
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+import sys
+
 import folium
-from PyQt5.QtWebEngineWidgets import QWebEngineView
 import pyqtgraph as pg
-from communication import get_daily_data
-from thermals import f
 import scipy
+from PyQt5.QtCore import *
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWidgets import *
+
+from ModelPanel import SolarPanel
+from communication import get_daily_data
+from thermals import f, solar_heat_flow, radiation_heat_flow, convective_heat_flow
+
+
+class TableView(QTableWidget):
+    def __init__(self, data, *args):
+        QTableWidget.__init__(self, *args)
+        self.data = data
+        self.setData()
+        self.resizeColumnsToContents()
+        self.resizeRowsToContents()
+        self.setSortingEnabled(False)
+
+    def setData(self):
+        verHeaders = []
+        for n, key in enumerate((self.data.keys())):
+            verHeaders.append(key)
+            for m, item in enumerate(self.data[key]):
+                newitem = QTableWidgetItem(item)
+                self.setItem(n, m, newitem)
+        self.setVerticalHeaderLabels(verHeaders)
 
 
 class NumberLineEdit(QLineEdit):
@@ -87,11 +107,32 @@ def monthToInt(month):
         return 12
 
 
+def stringify(list):
+    for i in range(len(list)):
+        list[i] = str(round(list[i], 2))
+    return list
+
+
 def openWindow(self, data, inputs):
     self.w = outputWindow()
-    output_layout = QHBoxLayout()
-    temperature_graph = pg.PlotWidget()
+    output_layout = QVBoxLayout()
+    graph_layout = QHBoxLayout()
     hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+
+    # Irradiance Graph
+    irrad_graph = pg.PlotWidget()
+    irrad_graph.setBackground('w')
+    global_pen = pg.mkPen(color=(0, 0, 0), width=3)
+    clearsky_pen = pg.mkPen(color=(0, 191, 255), width=3)
+    irrad_graph.setXRange(0, 23, padding=0)
+    irrad_graph.setLimits(xMin=0, xMax=23)
+    if inputs[9]:
+        irrad_graph.plot(hours, data[3], pen=clearsky_pen)
+    else:
+        irrad_graph.plot(hours, data[2], pen=global_pen)
+
+    # Temperature Graph
+    temperature_graph = pg.PlotWidget()
     temperature_graph.setBackground('w')
     airtemp_pen = pg.mkPen(color=(255, 0, 0), width=3)
     temp_pen = pg.mkPen(color=(0, 0, 0), width=3)
@@ -100,14 +141,106 @@ def openWindow(self, data, inputs):
     temperature_graph.plot(hours, data[1], pen=airtemp_pen)
 
     plate_temps = []
-    for i in range(0, len(data[1])):
-        print("Inputs: " ,inputs[9], inputs[4], inputs[5], inputs[8], data[1][i], data[2][i], inputs[3], inputs[6], inputs[9], hours[i])
-        a = scipy.optimize.newton(f, 0, args=[inputs[9], inputs[4], inputs[5], inputs[8], data[1][i], data[2][i], inputs[3], inputs[6], inputs[9], hours[i]], maxiter=10000)
-        plate_temps.append(a.real)
-    temperature_graph.plot(hours, plate_temps, pen=temp_pen)
+    if inputs[9]:  # This checks for clear sky bool
+        for i in range(0, len(data[1])):
+            print("Inputs: ", inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[3][i], inputs[4], inputs[5],
+                  inputs[6], hours[i])
+            a = scipy.optimize.newton(f, 0, args=[inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[3][i],
+                                                  inputs[4], inputs[5], inputs[6], hours[i]], maxiter=10000)
+            print("Hour: ", hours[i], " Plate Temp: ", a.real)
+            plate_temps.append(a.real)
+        temperature_graph.plot(hours, plate_temps, pen=temp_pen)
+    else:
+        for i in range(0, len(data[1])):
+            print("Inputs: ", inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[2][i], inputs[4], inputs[5],
+                  inputs[6], hours[i])
+            a = scipy.optimize.newton(f, 0, args=[inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[2][i],
+                                                  inputs[4], inputs[5], inputs[6], hours[i]], maxiter=10000)
+            print("Hour: ", hours[i], " Plate Temp: ", a.real)
+            plate_temps.append(a.real)
+        temperature_graph.plot(hours, plate_temps, pen=temp_pen)
 
-    #ADD CLEAR SKY HERE NEED BOOL THO
-    output_layout.addWidget(temperature_graph)
+    # These calculations are based on a LG300S1V-A5 Solar Panel
+
+    # Efficiency Graph
+    eff_graph = pg.PlotWidget()
+    eff_graph.setBackground('w')
+    eff_pen = pg.mkPen(color=(0, 0, 0), width=3)
+    eff_theo = []
+    eff_real = []
+    for i in range(0, len(data[1])):
+        eff_calc_theo = -0.41 * plate_temps[i] + 110.25
+        eff_theo.append(eff_calc_theo)
+        eff_calc_real = -0.41 * plate_temps[i] + 110.25
+        if eff_calc_real >= 100:
+            eff_calc_real = 100
+        eff_real.append(eff_calc_real)
+    eff_graph.plot(hours, eff_theo, pen=eff_pen)
+    eff_graph.plot(hours, eff_real, pen=eff_pen)
+
+    # Power Graph
+    power_graph = pg.PlotWidget()
+    power_graph.setBackground('w')
+    power_pen = pg.mkPen(color=(255, 215, 0), width=3)
+    power_theo = []
+    power_real = []
+    if inputs[9]:
+        for i in range(0, len(data[1])):
+            # eff_dif_real = eff_real[i]-100
+            # eff_dif_theo = eff_theo[i]-100
+            power_calc_theo = (0.175 * eff_theo[i] / 100) * data[3][i] * inputs[1] * inputs[2]
+            power_calc_real = (0.175 * eff_real[i] / 100) * data[3][i] * inputs[1] * inputs[2]
+            if power_calc_theo >= 300:
+                power_calc_theo = 300
+            power_theo.append(power_calc_theo)
+            if power_calc_real >= 300:
+                power_calc_real = 300
+            power_real.append(power_calc_real)
+        power_graph.plot(hours, power_theo, pen=power_pen)
+        power_graph.plot(hours, power_real, pen=power_pen)
+    else:
+        for i in range(0, len(data[1])):
+            # eff_dif_real = eff_real[i]-100
+            # eff_dif_theo = eff_theo[i]-100
+            power_calc_theo = (0.175 * eff_theo[i] / 100) * data[2][i] * inputs[1] * inputs[2]
+            power_calc_real = (0.175 * eff_real[i] / 100) * data[2][i] * inputs[1] * inputs[2]
+            if power_calc_theo >= 300:
+                power_calc_theo = 300
+            power_theo.append(power_calc_theo)
+            if power_calc_real >= 300:
+                power_calc_real = 300
+            power_real.append(power_calc_real)
+        power_graph.plot(hours, power_theo, pen=power_pen)
+        power_graph.plot(hours, power_real, pen=power_pen)
+
+    # Table
+    if inputs[9]:
+        data = {'Irradiance [W/m^2]': stringify(data[3]),
+                'Air Temperature [°C]': stringify(data[1]),
+                'Solar Heat Flow [W]': solar_heat_flow(inputs[3], inputs[1]*inputs[2], data[3]),
+                'Convective Heat Flow [W]': radiation_heat_flow(inputs[0],inputs[1]*inputs[2],plate_temps #SKY TEMPERATURE CALC)
+                'Plate Temperature [°C]': stringify(plate_temps),
+                'Efficiency Theoretical [%]': stringify(eff_theo),
+                'Efficiency Real [%]': stringify(eff_real),
+                'Power Theoretical [W]': stringify(power_theo),
+                'Power Real [W]': stringify(power_real)}
+    else:
+        data = {'Irradiance [W/m^2]': stringify(data[2]),
+                'Air Temperature [°C]': stringify(data[1]),
+                'Plate Temperature [°C]': stringify(plate_temps),
+                'Efficiency Theoretical [%]': stringify(eff_theo),
+                'Efficiency Real [%]': stringify(eff_real),
+                'Power Theoretical [W]': stringify(power_theo),
+                'Power Real [W]': stringify(power_real)}
+
+    tableWidget = TableView(data, 7, 24)
+    tableWidget.resizeRowsToContents()
+    graph_layout.addWidget(irrad_graph)
+    graph_layout.addWidget(temperature_graph)
+    graph_layout.addWidget(eff_graph)
+    graph_layout.addWidget(power_graph)
+    output_layout.addLayout(graph_layout)
+    output_layout.addWidget(tableWidget)
 
     self.w.setLayout(output_layout)
     self.w.show()
@@ -157,17 +290,17 @@ class Window(QWidget):
         # Need to add Numbers only here
         line_edit_windspeed = QLineEdit()
         meteo_data_layout.addWidget(line_edit_windspeed)
-        meteo_data_layout.addWidget(QLabel("Wind Direction [°]"))
-        line_edit_winddirection = QLineEdit()
-        meteo_data_layout.addWidget(line_edit_winddirection)
+        # meteo_data_layout.addWidget(QLabel("Wind Direction [°]"))
+        # line_edit_winddirection = QLineEdit()
+        # meteo_data_layout.addWidget(line_edit_winddirection)
         meteo_data_layout.addWidget(QLabel("Relative Humidity [%]"))
         line_edit_rel_humidity = QLineEdit()
         meteo_data_layout.addWidget(line_edit_rel_humidity)
-        check_g_irrad = QCheckBox("Global Irradiance")
-        meteo_data_layout.addWidget(check_g_irrad)
+        # check_g_irrad = QCheckBox("Global Irradiance")
+        # meteo_data_layout.addWidget(check_g_irrad)
         check_clearsky = QCheckBox("Clear Sky")
         meteo_data_layout.addWidget(check_clearsky)
-        check_temp = QCheckBox("Show Temperature")
+        check_temp = QCheckBox("Show Air Temperature")
         meteo_data_layout.addWidget(check_temp)
 
         # Setup for Plate Data
@@ -216,17 +349,18 @@ class Window(QWidget):
         left_layout.addLayout(lat_lon_layout)
 
         def calculateClicked():
-            inputs = [cb_month.currentText(), float(line_edit_windspeed.text()), float(line_edit_winddirection.text()),
-                      float(line_edit_rel_humidity.text()), float(line_edit_length.text()), float(line_edit_width.text()),
-                      float(line_edit_angle.text()), float(line_edit_azimuth.text()), float(line_edit_absorb_factor.text()),
-                      float(line_edit_em_factor.text())]
+            inputs = [float(line_edit_em_factor.text()), float(line_edit_length.text()), float(line_edit_width.text()),
+                      float(line_edit_absorb_factor.text()), float(line_edit_rel_humidity.text()),
+                      float(line_edit_angle.text()),
+                      float(line_edit_windspeed.text()), float(line_edit_azimuth.text()), cb_month.currentText(),
+                      check_clearsky.isChecked()]
 
-            inputs[0] = monthToInt(inputs[0])
+            inputs[8] = monthToInt(inputs[8])
             coords = tuple(float(x) for x in coord_line_edit.text().split(','))
-            if check_g_irrad.isChecked():
-                b_global = 1
-            else:
-                b_global = 0
+            # if check_g_irrad.isChecked():
+            b_global = 1
+            # else:
+            #    b_global = 0
             if check_clearsky.isChecked():
                 b_clearsky = 1
             else:
@@ -235,7 +369,7 @@ class Window(QWidget):
                 b_temp = 1
             else:
                 b_temp = 0
-            pvgis_data = get_daily_data(coords[0], coords[1], inputs[0], inputs[1], inputs[2], b_global,
+            pvgis_data = get_daily_data(coords[0], coords[1], inputs[8], inputs[4], inputs[7], b_global,
                                         b_clearsky, b_temp, 0)
 
             openWindow(self, pvgis_data, inputs)

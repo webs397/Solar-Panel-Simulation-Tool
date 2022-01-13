@@ -41,6 +41,9 @@ def incoming_heat_flow(a_s, plate_area, irradiation_global):
 
 def Reynold_m(wind_velocity, length, dynamic_viscosity_l, density_l):
     """ mittlere Reynolds-Zahl - (8.17) S.231 """
+
+    if wind_velocity == 0.0:
+        wind_velocity == 1e-7
     Re_m = (wind_velocity * length * density_l) / dynamic_viscosity_l
     return Re_m
 
@@ -58,6 +61,8 @@ def heat_exchange_coefficient_lam(Nu_lam, specific_isobar_heat_cap_l, length):
 
 def nusselt_number_turb(Re_m, Pr):
     """ mittlere Nu-Zahl - (8.21) S.232 """
+    if Re_m == 0.0:
+        Re_m = 1e-7
     N_turb = (0.037 * pow(Re_m, 0.8) * Pr) / (1 + 2.443 * pow(Re_m, -0.1) * (pow(Pr, 2 / 3) - 1))
     return N_turb
 
