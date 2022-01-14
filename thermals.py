@@ -16,7 +16,7 @@ specific_isobar_heat_cap_l = 1.007
 temp_conductivity_l = 2.232e-05
 # Prandtl Zahl  von Trockener Luft bei 25°C und 1 bar
 prandtl = 0.7075
-# Dichte voon Luift bei 25°C und 1 bar [kg/m3]
+# Dichte voon Luft bei 25°C und 1 bar [kg/m3]
 density_l = 1.169
 
 gravity = 9.80665

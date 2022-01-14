@@ -3,7 +3,7 @@ import sys
 
 import folium
 import pyqtgraph as pg
-import scipy
+from scipy import optimize
 from PyQt5.QtCore import *
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import *
@@ -34,6 +34,7 @@ class TableView(QTableWidget):
                 newitem = QTableWidgetItem(item)
                 self.setItem(n, m, newitem)
         self.setVerticalHeaderLabels(verHeaders)
+        self.setHorizontalHeaderLabels(stringify([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]))
 
 
 class NumberLineEdit(QLineEdit):
@@ -161,7 +162,7 @@ def openWindow(self, data, inputs):
         for i in range(0, len(data[1])):
             #print("Inputs: ", inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[3][i], inputs[4], inputs[5],
                   #inputs[6], hours[i])
-            a = scipy.optimize.newton(f, 0, args=[inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[3][i],
+            a = optimize.newton(f, 0, args=[inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[3][i],
                                                   inputs[4], inputs[5], inputs[6], hours[i]], maxiter=10000)
             #print("Hour: ", hours[i], " Plate Temp: ", a.real)
             plate_temps.append(a.real)
@@ -170,7 +171,7 @@ def openWindow(self, data, inputs):
         for i in range(0, len(data[1])):
             #print("Inputs: ", inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[2][i], inputs[4], inputs[5],
                   #inputs[6], hours[i])
-            a = scipy.optimize.newton(f, 0, args=[inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[2][i],
+            a = optimize.newton(f, 0, args=[inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[2][i],
                                                   inputs[4], inputs[5], inputs[6], hours[i]], maxiter=10000)
             #print("Hour: ", hours[i], " Plate Temp: ", a.real)
             plate_temps.append(a.real)

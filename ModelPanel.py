@@ -34,7 +34,7 @@ class SolarPanel(QWidget):
 
     def resizeEvent(self, a0: QResizeEvent) -> None:
         self.panel_pos = (0.25 * a0.size().width(), 0.25 * a0.size().height())
-        self.panel_size = (0.35 * a0.size().width(), 0.5 * a0.size().height())
+        self.panel_size = (0.2 * a0.size().width(), 0.8 * a0.size().height())
         self.setPoints()
         self.update()
         return super().resizeEvent(a0)                                
