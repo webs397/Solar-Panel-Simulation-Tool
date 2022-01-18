@@ -162,7 +162,7 @@ def openWindow(self, data, inputs):
         for i in range(0, len(data[1])):
             #print("Inputs: ", inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[3][i], inputs[4], inputs[5],
                   #inputs[6], hours[i])
-            a = optimize.newton(f, 0, args=[inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[3][i],
+            a = optimize.newton(f, data[1][i]-10, args=[inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[3][i],
                                                   inputs[4], inputs[5], inputs[6], hours[i]], maxiter=10000)
             #print("Hour: ", hours[i], " Plate Temp: ", a.real)
             plate_temps.append(a.real)
@@ -171,7 +171,7 @@ def openWindow(self, data, inputs):
         for i in range(0, len(data[1])):
             #print("Inputs: ", inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[2][i], inputs[4], inputs[5],
                   #inputs[6], hours[i])
-            a = optimize.newton(f, 0, args=[inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[2][i],
+            a = optimize.newton(f, data[1][i]-10, args=[inputs[0], inputs[1], inputs[2], inputs[3], data[1][i], data[2][i],
                                                   inputs[4], inputs[5], inputs[6], hours[i]], maxiter=10000)
             #print("Hour: ", hours[i], " Plate Temp: ", a.real)
             plate_temps.append(a.real)

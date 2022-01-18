@@ -54,5 +54,5 @@ def set_parameters(lat, lon, month, angle, azimuth, b_global, b_clearsky, b_temp
     return parameters
 
 
-get_daily_data(50.77534, 6.0838868, 1, 0, 0, 1, 1, 1, 1)
+#get_daily_data(50.77534, 6.0838868, 1, 0, 0, 1, 1, 1, 1)
 
